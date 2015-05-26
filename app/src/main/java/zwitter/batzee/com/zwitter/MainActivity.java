@@ -58,7 +58,9 @@ public class MainActivity extends ActionBarActivity {
                 credentialStore.putString(uTils.SessionSecret, secret);
                 credentialStore.commit();
 
+                finish();
                 startActivity(dashBoard);
+
                 Log.d("After Allowing", "token: "+ token+",secret: "+secret);
             }
 
