@@ -1,11 +1,12 @@
 package zwitter.batzee.com.zwitter;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,22 +14,25 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterApiClient;
 import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.services.StatusesService;
 
 import java.util.ArrayList;
 
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
+import twitter4j.auth.AccessToken;
 import zwitter.batzee.com.zwitter.com.batzee.zwitter.adapters.NavDrawerListAdapter;
 import zwitter.batzee.com.zwitter.com.batzee.zwitter.models.NavDrawerItem;
 
 /**
  * Created by adh on 5/20/2015.
  */
-public class Dashboard extends ActionBarActivity {
+public class Dashboard extends Activity {
 
     Utils uTils;
     SharedPreferences.Editor credentialStore;
@@ -43,6 +47,13 @@ public class Dashboard extends ActionBarActivity {
     private DrawerLayout mdrawerLayout;
     private ListView mDrawerList;
 
+    TwitterSession session;
+
+    String sessionToken;
+    String sessionSecret;
+    String userName;
+    String userID;
+
     private ArrayList<NavDrawerItem> navDrawaerItems;
     private NavDrawerListAdapter adapter;
 
@@ -51,27 +62,19 @@ public class Dashboard extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dashboard);
 
-        //twitterApiClient = TwitterCore.getInstance().getApiClient(Twitter.getSessionManager().getActiveSession());
+        TwitterFactory factory = new TwitterFactory();
 
-        /*
-        twitterApiClient = TwitterCore.getInstance().getApiClient();
-        statusService = twitterApiClient.getStatusesService();
-*/
-/*
-        TwitterSession session = Twitter.getSessionManager().getActiveSession();
-        session = Twitter.getSessionManager().getActiveSession();
-        TwitterApiClient twitterApiClient = TwitterCore.getInstance().getApiClient(session);
-        StatusesService statusesService = twitterApiClient.getStatusesService();
-*/
-        /*
-        TwitterSession session = Twitter.getSessionManager().getActiveSession();
-        String name =session.getUserName();
-        Toast.makeText(Dashboard.this,"Welcome "+name, Toast.LENGTH_SHORT);
-        */
 
         uTils = new Utils();
         prefs =  getSharedPreferences(uTils.SharedPrefName, MODE_PRIVATE);
         credentialStore = prefs.edit();
+
+        userName = prefs.getString(uTils.SessionUsername, "");
+        userID = prefs.getString(uTils.SessionUserID, "");
+        sessionToken = prefs.getString(uTils.SessionToken, "");
+        sessionSecret = prefs.getString(uTils.SessionSecret, "");
+
+
 
         Zweet = (ImageButton) findViewById(R.id.zweetButton);
 
@@ -102,13 +105,23 @@ public class Dashboard extends ActionBarActivity {
         Zweet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
-                Intent tweet =  new Intent(Dashboard.this, Tweet.class);
-                startActivity(tweet);
-                */
-                createATweet();
+               // createATweet();
+                new RetrieveFeedTask().execute();
             }
         });
+
+/*
+        session = Twitter.getSessionManager().getActiveSession();
+        TwitterAuthToken authToken = session.getAuthToken();
+        String token = authToken.token;
+        String secret = authToken.secret;
+
+        String name =session.getUserName();
+        Toast.makeText(Dashboard.this,"Welcome "+name, Toast.LENGTH_SHORT);
+
+        TwitterApiClient twitterApiClient = TwitterCore.getInstance().getApiClient(session);
+        StatusesService statusesService = twitterApiClient.getStatusesService();
+*/
     }
 
     public void selectedItem(int position){
@@ -116,17 +129,9 @@ public class Dashboard extends ActionBarActivity {
         if(position == 1 ){
             Toast.makeText(Dashboard.this, "LogOut", Toast.LENGTH_SHORT);
             Log.d("LIST CLICK", position + "");
-/*
-            CookieSyncManager.createInstance(this);
-            CookieManager cookieManager = CookieManager.getInstance();
-            cookieManager.removeSessionCookie();
-            Twitter.getSessionManager().clearActiveSession();
-            Twitter.logOut();
-  */
 
-
-            Twitter.getInstance();
-            Twitter.logOut();
+           // Twitter.getInstance();
+           // Twitter.logOut();
 
             credentialStore.putString(uTils.SessionToken, "");
             credentialStore.putString(uTils.SessionSecret, "");
@@ -141,8 +146,6 @@ public class Dashboard extends ActionBarActivity {
             Toast.makeText(Dashboard.this,"Home",Toast.LENGTH_SHORT);
             Log.d("LIST CLICK", position + "");
         }
-
-
     }
 
     public void createATweet(){
@@ -162,4 +165,27 @@ public class Dashboard extends ActionBarActivity {
          }
         );
     }
+
+    class RetrieveFeedTask extends AsyncTask<String, Void, Integer> {
+
+        private Exception exception;
+
+        protected Integer doInBackground(String... urls) {
+
+                AccessToken a = new AccessToken(sessionToken, sessionSecret);
+                Twitter twitter = new TwitterFactory().getInstance();
+                twitter.setOAuthConsumer(uTils.ApiKey, uTils.ApiSecret);
+                twitter.setOAuthAccessToken(a);
+            try {
+                twitter.updateStatus("This Tweet is generated from my Own Twitter app Zwitter - App is in testing Phase");
+                Toast.makeText(Dashboard.this, "Successfully Tweeted", Toast.LENGTH_SHORT).show();
+            } catch (twitter4j.TwitterException e) {
+                e.printStackTrace();
+                Toast.makeText(Dashboard.this, "Tweet Failed", Toast.LENGTH_SHORT).show();
+            }
+            return 1;
+            }
+
+        }
+
 }

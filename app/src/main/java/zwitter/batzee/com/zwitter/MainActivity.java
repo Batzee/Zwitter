@@ -1,14 +1,13 @@
 package zwitter.batzee.com.zwitter;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterAuthToken;
@@ -16,7 +15,7 @@ import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.identity.TwitterLoginButton;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     TwitterLoginButton loginButton;
     SharedPreferences prefs;
@@ -38,6 +37,7 @@ public class MainActivity extends ActionBarActivity {
         sessionToken = prefs.getString(uTils.SessionToken,"");
 
         if(!(sessionToken.equals(""))){
+            finish();
             startActivity(dashBoard);
         }
 
@@ -49,16 +49,21 @@ public class MainActivity extends ActionBarActivity {
             public void success(Result<TwitterSession> result) {
                 Log.d("Callback Results","Success - "+result);
 
-                TwitterSession session = Twitter.getSessionManager().getActiveSession();
+                //TwitterSession session = Twitter.getSessionManager().getActiveSession();
+                TwitterSession session = result.data;
+                Long userID = session.getUserId();
+                String userName = session.getUserName();
+
                 TwitterAuthToken authToken = session.getAuthToken();
                 String token = authToken.token;
                 String secret = authToken.secret;
 
                 credentialStore.putString(uTils.SessionToken,token);
                 credentialStore.putString(uTils.SessionSecret, secret);
+                credentialStore.putString(uTils.SessionUserID,userID+"");
+                credentialStore.putString(uTils.SessionUsername, userName);
                 credentialStore.commit();
 
-                finish();
                 startActivity(dashBoard);
 
                 Log.d("After Allowing", "token: "+ token+",secret: "+secret);
