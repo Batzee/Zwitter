@@ -1,69 +1,60 @@
 package zwitter.batzee.com.zwitter;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.TypedArray;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ImageButton;
-import android.widget.ListView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.twitter.sdk.android.core.Callback;
-import com.twitter.sdk.android.core.Result;
-import com.twitter.sdk.android.core.TwitterApiClient;
-import com.twitter.sdk.android.core.TwitterException;
-import com.twitter.sdk.android.core.TwitterSession;
-import com.twitter.sdk.android.core.services.StatusesService;
+import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
+import com.twitter.sdk.android.Twitter;
 
-import java.util.ArrayList;
-
-import twitter4j.Twitter;
-import twitter4j.TwitterFactory;
-import twitter4j.auth.AccessToken;
-import zwitter.batzee.com.zwitter.com.batzee.zwitter.adapters.NavDrawerListAdapter;
-import zwitter.batzee.com.zwitter.com.batzee.zwitter.models.NavDrawerItem;
+import zwitter.batzee.com.zwitter.com.batzee.zwitter.adapters.SlideDrawerAdapter;
 
 /**
  * Created by adh on 5/20/2015.
  */
-public class Dashboard extends Activity {
+public class Dashboard extends AppCompatActivity {
 
     Utils uTils;
     SharedPreferences.Editor credentialStore;
     SharedPreferences prefs;
-
-    ImageButton Zweet;
-    TwitterApiClient twitterApiClient;
-    StatusesService statusService;
-
-    private String[] navMenuTitles;
-    private TypedArray navMenuIcons;
-    private DrawerLayout mdrawerLayout;
-    private ListView mDrawerList;
-
-    TwitterSession session;
 
     String sessionToken;
     String sessionSecret;
     String userName;
     String userID;
 
-    private ArrayList<NavDrawerItem> navDrawaerItems;
-    private NavDrawerListAdapter adapter;
+    //Titles And Icons For Our Navigation Drawer List
+    String TITLES[] = {"Home","Logout"};
+    int ICONS[] = {R.drawable.minihome,R.drawable.dna};
+    //header data
+    String NAME = "Zwitter";
+    String EMAIL = "help@zwitter.com";
+    int PROFILE = R.drawable.ztweet;
+
+    private Toolbar toolbar;                              // Declaring the Toolbar Object
+
+    RecyclerView mRecyclerView;                           // Declaring RecyclerView
+    RecyclerView.Adapter mAdapter;                        // Declaring Adapter For Recycler View
+    RecyclerView.LayoutManager mLayoutManager;            // Declaring Layout Manager as a linear layout manager
+    DrawerLayout Drawer;                                  // Declaring DrawerLayout
+
+    ActionBarDrawerToggle mDrawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dashboard);
-
-        TwitterFactory factory = new TwitterFactory();
-
 
         uTils = new Utils();
         prefs =  getSharedPreferences(uTils.SharedPrefName, MODE_PRIVATE);
@@ -74,118 +65,131 @@ public class Dashboard extends Activity {
         sessionToken = prefs.getString(uTils.SessionToken, "");
         sessionSecret = prefs.getString(uTils.SessionSecret, "");
 
+        setFloatingActionButton();
+        setUpDrawerAction();
+
+    }
+
+    private void setUpDrawerAction() {
+
+        toolbar = (Toolbar) findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView); // Assigning the RecyclerView Object to the xml View
+        mRecyclerView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
+        mAdapter = new SlideDrawerAdapter(TITLES,ICONS,NAME,EMAIL,PROFILE);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        mRecyclerView.setAdapter(mAdapter);                              // Setting the adapter to RecyclerView
+
+        final GestureDetector mGestureDetector = new GestureDetector(Dashboard.this, new GestureDetector.SimpleOnGestureListener() {
+
+            @Override public boolean onSingleTapUp(MotionEvent e) {
+
+                return true;
+            }
+
+        });
 
 
-        Zweet = (ImageButton) findViewById(R.id.zweetButton);
-
-        navMenuTitles = getResources().getStringArray(R.array.nav_drawer_items);
-        navMenuIcons = getResources().obtainTypedArray(R.array.nav_drawer_icons);
-
-        mdrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.list_slidermenu);
-
-        navDrawaerItems = new ArrayList<NavDrawerItem>();
-
-        navDrawaerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
-        navDrawaerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(1, -1)));
-
-        navMenuIcons.recycle();
-
-        adapter = new NavDrawerListAdapter(getApplicationContext(), navDrawaerItems);
-        mDrawerList.setAdapter(adapter);
-
-        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
+                View child = recyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
 
-                selectedItem(position);
+                if (child != null && mGestureDetector.onTouchEvent(motionEvent)) {
+                    Drawer.closeDrawers();
+
+                    if (recyclerView.getChildPosition(child) == 2) {
+                        logOutAction();
+                    }
+                    else{
+                        Toast.makeText(Dashboard.this, "The Item Clicked is: " + recyclerView.getChildPosition(child), Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
+
             }
         });
 
-        Zweet.setOnClickListener(new View.OnClickListener() {
+        mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
+        mRecyclerView.setLayoutManager(mLayoutManager);                 // Setting the layout Manager
+        Drawer = (DrawerLayout) findViewById(R.id.DrawerLayout);        // Drawer object Assigned to the view
+        mDrawerToggle = new ActionBarDrawerToggle(this,Drawer,toolbar,R.string.drawer_open,R.string.drawer_close){
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                //when drawer Opens
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                //When drawer closed
+            }
+
+        };
+        // Drawer Toggle Object Made
+        Drawer.setDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
+        mDrawerToggle.syncState();
+    }
+
+    private void logOutAction() {
+
+        Twitter.getInstance();
+        Twitter.logOut();
+
+        credentialStore.putString(uTils.SessionToken, "");
+        credentialStore.putString(uTils.SessionSecret, "");
+        credentialStore.commit();
+
+        Toast.makeText(Dashboard.this, "Successfully Logged Out", Toast.LENGTH_SHORT).show();
+        finish();
+
+        Intent login =  new Intent(Dashboard.this,MainActivity.class);
+        startActivity(login);
+    }
+
+    private void setFloatingActionButton() {
+
+        ImageView icon = new ImageView(this); // Create an icon
+        icon.setImageResource(R.drawable.ztweetlogo);
+        FloatingActionButton actionButton = new FloatingActionButton.Builder(this)
+                .setContentView(icon)
+                .setBackgroundDrawable(R.drawable.action_selector)
+                .build();
+
+        actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // createATweet();
-                new RetrieveFeedTask().execute();
+                Intent tweet =  new Intent(Dashboard.this,Tweet.class);
+                startActivity(tweet);
             }
         });
 
-/*
-        session = Twitter.getSessionManager().getActiveSession();
-        TwitterAuthToken authToken = session.getAuthToken();
-        String token = authToken.token;
-        String secret = authToken.secret;
+        /*
+        SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
+       // repeat many times:
+        ImageView itemIcon = new ImageView(this);
+        itemIcon.setImageResource(R.drawable.home);
+        SubActionButton tweetButton = itemBuilder.setContentView(itemIcon).build();
 
-        String name =session.getUserName();
-        Toast.makeText(Dashboard.this,"Welcome "+name, Toast.LENGTH_SHORT);
+        FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
+                .addSubActionView(tweetButton)
+                .attachTo(actionButton)
+                .build();
 
-        TwitterApiClient twitterApiClient = TwitterCore.getInstance().getApiClient(session);
-        StatusesService statusesService = twitterApiClient.getStatusesService();
-*/
-    }
-
-    public void selectedItem(int position){
-
-        if(position == 1 ){
-            Toast.makeText(Dashboard.this, "LogOut", Toast.LENGTH_SHORT);
-            Log.d("LIST CLICK", position + "");
-
-           // Twitter.getInstance();
-           // Twitter.logOut();
-
-            credentialStore.putString(uTils.SessionToken, "");
-            credentialStore.putString(uTils.SessionSecret, "");
-            credentialStore.commit();
-
-            finish();
-            Intent login =  new Intent(Dashboard.this,MainActivity.class);
-            startActivity(login);
-
-        }
-        else if(position == 0){
-            Toast.makeText(Dashboard.this,"Home",Toast.LENGTH_SHORT);
-            Log.d("LIST CLICK", position + "");
-        }
-    }
-
-    public void createATweet(){
-
-        statusService.update("Hello from Zwitter",null,null,null,null,"hello2",true,true, new Callback<com.twitter.sdk.android.core.models.Tweet>() {
+        tweetButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void success(Result<com.twitter.sdk.android.core.models.Tweet> result) {
-              Log.d("TWEET", "POSTED");
-                Toast.makeText(Dashboard.this, "Tweet Sent", Toast.LENGTH_SHORT);
+            public void onClick(View v) {
+                Intent tweet =  new Intent(Dashboard.this,Tweet.class);
+                startActivity(tweet);
             }
-
-        public void failure(TwitterException exception) {
-             Log.d("TWEET", "FAILED");
-            exception.printStackTrace();
-            Toast.makeText(Dashboard.this, "Tweet Failed", Toast.LENGTH_SHORT);
-           }
-         }
-        );
+        });
+        */
     }
-
-    class RetrieveFeedTask extends AsyncTask<String, Void, Integer> {
-
-        private Exception exception;
-
-        protected Integer doInBackground(String... urls) {
-
-                AccessToken a = new AccessToken(sessionToken, sessionSecret);
-                Twitter twitter = new TwitterFactory().getInstance();
-                twitter.setOAuthConsumer(uTils.ApiKey, uTils.ApiSecret);
-                twitter.setOAuthAccessToken(a);
-            try {
-                twitter.updateStatus("This Tweet is generated from my Own Twitter app Zwitter - App is in testing Phase");
-                Toast.makeText(Dashboard.this, "Successfully Tweeted", Toast.LENGTH_SHORT).show();
-            } catch (twitter4j.TwitterException e) {
-                e.printStackTrace();
-                Toast.makeText(Dashboard.this, "Tweet Failed", Toast.LENGTH_SHORT).show();
-            }
-            return 1;
-            }
-
-        }
-
 }

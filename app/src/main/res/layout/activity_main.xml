@@ -11,4 +11,17 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="90dp" />
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:background="@drawable/ztweet"
+        android:maxHeight="200dp"
+        android:maxWidth="200dp"
+        android:minHeight="200dp"
+        android:minWidth="200dp"
+        android:layout_above="@+id/login_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="64dp" />
+
 </RelativeLayout>
