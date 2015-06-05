@@ -13,3 +13,5 @@ with page numbering and tweet them in a loop.
 
 Even though the tweet will be split according to the twitter restriction, the message will be posted in a manner 
 where it can be read as one tweet with the help of the page numbering
+
+When using the app, create a Twitter app and add your own App Key and App Secret in to the Utils.java file
