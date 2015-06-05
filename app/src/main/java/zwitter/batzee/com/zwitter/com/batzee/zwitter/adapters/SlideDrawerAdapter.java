@@ -112,6 +112,7 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
         }
         else{
 
+           // Picasso.with(holder.itemView.getContext()).load(email+"").into(holder.profile);
             holder.profile.setImageResource(profile);           // Similarly we set the resources for header view
             holder.Name.setText(name);
             holder.email.setText(email);

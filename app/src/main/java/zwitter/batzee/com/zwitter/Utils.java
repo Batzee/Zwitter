@@ -11,7 +11,7 @@ public class Utils {
     public String SessionUserID = "SessionUsername";
     public String SessionUsername = "SessionUserID";
 
-    public String ApiKey = "CvgQ2wwF2u4vbkMHP4mSlmY01";
-    public String ApiSecret = "pAtUWimAgK5KfhDiqEbYTqD5w4BgiWWSCKjqcYL4fCkQlScTuo";
+    public String ApiKey = "xxxxxxxxxxxxxxxxx";
+    public String ApiSecret = "xxxxxxxxxxxxxxxxxx";
 
 }

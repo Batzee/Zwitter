@@ -3,12 +3,14 @@ package zwitter.batzee.com.zwitter;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,13 +19,22 @@ import android.widget.Toast;
 
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.TwitterApiClient;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.models.User;
 
+import retrofit.http.GET;
+import retrofit.http.Query;
 import zwitter.batzee.com.zwitter.com.batzee.zwitter.adapters.SlideDrawerAdapter;
+import zwitter.batzee.com.zwitter.com.batzee.zwitter.adapters.ViewPagerAdapter;
 
 /**
  * Created by adh on 5/20/2015.
  */
-public class Dashboard extends AppCompatActivity {
+public class Dashboard extends AppCompatActivity  {
 
     Utils uTils;
     SharedPreferences.Editor credentialStore;
@@ -41,6 +52,7 @@ public class Dashboard extends AppCompatActivity {
     String NAME = "Zwitter";
     String EMAIL = "help@zwitter.com";
     int PROFILE = R.drawable.ztweet;
+    String profileURL = "";
 
     private Toolbar toolbar;                              // Declaring the Toolbar Object
 
@@ -51,13 +63,22 @@ public class Dashboard extends AppCompatActivity {
 
     ActionBarDrawerToggle mDrawerToggle;
 
+    ViewPager pager;
+    ViewPagerAdapter adapter;
+    SlidingTabLayout tabs;
+    CharSequence Titles[] = {"Time line", "Search"};
+    int Numboftabs =2;
+    TwitterSession session;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dashboard);
 
+       // session = Twitter.getSessionManager() .getActiveSession();
+
         uTils = new Utils();
-        prefs =  getSharedPreferences(uTils.SharedPrefName, MODE_PRIVATE);
+        prefs = getSharedPreferences(uTils.SharedPrefName, MODE_PRIVATE);
         credentialStore = prefs.edit();
 
         userName = prefs.getString(uTils.SessionUsername, "");
@@ -65,8 +86,57 @@ public class Dashboard extends AppCompatActivity {
         sessionToken = prefs.getString(uTils.SessionToken, "");
         sessionSecret = prefs.getString(uTils.SessionSecret, "");
 
-        setFloatingActionButton();
+        setUpTabs();
         setUpDrawerAction();
+        setFloatingActionButton();
+
+     //   getUserImage();
+
+    }
+
+    private void getUserImage() {
+
+
+
+        new MyTwitterApiClient(session).getUsersService().show(12L, null, true,
+                new Callback<User>() {
+                    @Override
+                    public void success(Result<User> result) {
+                        Log.d("twittercommunity", "user's profile url is "
+                                + result.data.profileImageUrlHttps);
+                        EMAIL = result.data.profileImageUrlHttps;
+                    }
+
+                    @Override
+                    public void failure(TwitterException exception) {
+                        Log.d("twittercommunity", "exception is " + exception);
+                    }
+                });
+    }
+
+    private void setUpTabs() {
+
+        // Creating The ViewPagerAdapter and Passing Fragment Manager, Titles fot the Tabs and Number Of Tabs.
+        adapter =  new ViewPagerAdapter(getSupportFragmentManager(),Titles,Numboftabs);
+
+        // Assigning ViewPager View and setting the adapter
+        pager = (ViewPager) findViewById(R.id.pager);
+        pager.setAdapter(adapter);
+
+        // Assiging the Sliding Tab Layout View
+        tabs = (SlidingTabLayout) findViewById(R.id.tabs);
+        tabs.setDistributeEvenly(true); // To make the Tabs Fixed set this true, This makes the tabs Space Evenly in Available width
+
+        // Setting Custom Color for the Scroll bar indicator of the Tab View
+        tabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
+            @Override
+            public int getIndicatorColor(int position) {
+                return getResources().getColor(R.color.tabsScrollColor);
+            }
+        });
+
+        // Setting the ViewPager For the SlidingTabsLayout
+        tabs.setViewPager(pager);
 
     }
 
@@ -100,8 +170,7 @@ public class Dashboard extends AppCompatActivity {
 
                     if (recyclerView.getChildPosition(child) == 2) {
                         logOutAction();
-                    }
-                    else{
+                    } else {
                         Toast.makeText(Dashboard.this, "The Item Clicked is: " + recyclerView.getChildPosition(child), Toast.LENGTH_SHORT).show();
                     }
                     return true;
@@ -149,7 +218,6 @@ public class Dashboard extends AppCompatActivity {
 
         Toast.makeText(Dashboard.this, "Successfully Logged Out", Toast.LENGTH_SHORT).show();
         finish();
-
         Intent login =  new Intent(Dashboard.this,MainActivity.class);
         startActivity(login);
     }
@@ -191,5 +259,24 @@ public class Dashboard extends AppCompatActivity {
             }
         });
         */
+    }
+
+    class MyTwitterApiClient extends TwitterApiClient {
+        public MyTwitterApiClient(TwitterSession session) {
+            super(session);
+        }
+
+        public UsersService getUsersService() {
+
+            return getService(UsersService.class);
+        }
+    }
+
+    interface UsersService {
+        @GET("/1.1/users/show.json")
+        void show(@Query("user_id") Long userId,
+                  @Query("screen_name") String screenName,
+                  @Query("include_entities") Boolean includeEntities,
+                  Callback<User> cb);
     }
 }
