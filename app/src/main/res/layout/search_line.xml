@@ -21,12 +21,12 @@
         android:layout_alignParentEnd="true"
         android:imeOptions="actionDone"
         android:elevation="4dp"
-        android:hint="Search"
-        android:textColorHint="#ffffff"
-        android:background="#60c9f0"
-        android:textColor="#ffffff"
+        android:hint="@string/search_hint"
+        android:drawableLeft="@drawable/ic_action_search"
+        android:textColorHint="@color/white"
+        android:background="@color/light_blue"
+        android:textColor="@color/white"
         android:paddingTop="70dp"
-        android:paddingLeft="20dp"
         android:paddingBottom="5dp" />
 
 </RelativeLayout>

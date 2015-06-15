@@ -1,5 +1,6 @@
 package zwitter.batzee.com.zwitter.com.batzee.zwitter.adapters;
 
+import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,7 +8,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import zwitter.batzee.com.zwitter.R;
+import zwitter.batzee.com.zwitter.Config;
 
 /**
  * Created by adh on 6/3/2015.
@@ -22,8 +26,16 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
     private int mIcons[];       // Int Array to store the passed icons resource value from Dashboard.java
 
     private String name;        //header Name
-    private int profile;        //profile picture
-    private String email;       //header email
+    private String profile;        //profile picture
+    private String email;
+    private int followers;
+    private int following;
+    private int favs;
+
+    String profileURL;
+    Config uTils;
+    SharedPreferences.Editor credentialStore;
+    SharedPreferences prefs;
 
     // Creating a ViewHolder which extends the RecyclerView View Holder
     // ViewHolder are used to store the inflated views in order to recycle them
@@ -32,41 +44,47 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
 
         int Holderid;
         TextView textView;
+        TextView followers;
+        TextView following;
+        TextView favs;
         ImageView imageView;
         ImageView profile;
         TextView Name;
         TextView email;
 
-
-        public ViewHolder(View itemView,int ViewType) {      // Creating ViewHolder Constructor with View and viewType As a parameter
+        public ViewHolder(View itemView, int ViewType) {      // Creating ViewHolder Constructor with View and viewType As a parameter
             super(itemView);
 
             // Here we set the appropriate view in accordance with the the view type as passed when the holder object is created
 
-            if(ViewType == TYPE_ITEM) {
+
+            if (ViewType == TYPE_ITEM) {
                 textView = (TextView) itemView.findViewById(R.id.rowText); // Creating TextView object with the id of textView from item_row.xml
                 imageView = (ImageView) itemView.findViewById(R.id.rowIcon);// Creating ImageView object with the id of ImageView from item_row.xml
                 Holderid = 1;                                               // setting holder id as 1 as the object being populated are of type item row
-            }
-            else{
+            } else {
                 Name = (TextView) itemView.findViewById(R.id.name);         // Creating Text View object from header.xml for name
                 email = (TextView) itemView.findViewById(R.id.email);       // Creating Text View object from header.xml for email
                 profile = (ImageView) itemView.findViewById(R.id.circleView);// Creating Image view object from header.xml for profile pic
+                followers = (TextView) itemView.findViewById(R.id.followerNumber);
+                following = (TextView) itemView.findViewById(R.id.followingnumber);
+                favs = (TextView) itemView.findViewById(R.id.favNumber);
                 Holderid = 0;                                                // Setting holder id = 0 as the object being populated are of type header view
             }
         }
     }
 
 
-
-    public SlideDrawerAdapter(String Titles[], int Icons[], String Name, String Email, int Profile){ // SlideDrawerAdapter Constructor with titles and icons parameter
+    public SlideDrawerAdapter(String Titles[], int Icons[], String Name, String Email, String Profile, int Followers, int Following, int Favs) { // SlideDrawerAdapter Constructor with titles and icons parameter
         // titles, icons, name, email, profile pic are passed from the main activity as we
         mNavTitles = Titles;                //have seen earlier
         mIcons = Icons;
         name = Name;
         email = Email;
-        profile = Profile;                     //here we assign those passed values to the values we declared here in adapter
-
+        profile = Profile;
+        followers = Followers;
+        following = Following;
+        favs = Favs;
     }
 
     //Below first we ovverride the method onCreateViewHolder which is called when the ViewHolder is
@@ -78,9 +96,9 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
     public SlideDrawerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         if (viewType == TYPE_ITEM) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_row,parent,false); //Inflating the layout
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_row, parent, false); //Inflating the layout
 
-            ViewHolder vhItem = new ViewHolder(v,viewType); //Creating ViewHolder and passing the object of type view
+            ViewHolder vhItem = new ViewHolder(v, viewType); //Creating ViewHolder and passing the object of type view
 
             return vhItem; // Returning the created object
 
@@ -88,9 +106,9 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
 
         } else if (viewType == TYPE_HEADER) {
 
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.header,parent,false); //Inflating the layout
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.header, parent, false); //Inflating the layout
 
-            ViewHolder vhHeader = new ViewHolder(v,viewType); //Creating ViewHolder and passing the object of type view
+            ViewHolder vhHeader = new ViewHolder(v, viewType); //Creating ViewHolder and passing the object of type view
 
             return vhHeader; //returning the object created
 
@@ -105,24 +123,31 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
     // which view type is being created 1 for item row
     @Override
     public void onBindViewHolder(SlideDrawerAdapter.ViewHolder holder, int position) {
-        if(holder.Holderid ==1) {                              // as the list view is going to be called after the header view so we decrement the
+        if (holder.Holderid == 1) {                              // as the list view is going to be called after the header view so we decrement the
             // position by 1 and pass it to the holder while setting the text and image
             holder.textView.setText(mNavTitles[position - 1]); // Setting the Text with the array of our Titles
-            holder.imageView.setImageResource(mIcons[position -1]);// Settimg the image with array of our icons
-        }
-        else{
+            holder.imageView.setImageResource(mIcons[position - 1]);// Settimg the image with array of our icons
+        } else {
 
-           // Picasso.with(holder.itemView.getContext()).load(email+"").into(holder.profile);
-            holder.profile.setImageResource(profile);           // Similarly we set the resources for header view
+            // Picasso.with(holder.itemView.getContext()).load(email+"").into(holder.profile);
+            //holder.profile.setImageResource(profile);           // Similarly we set the resources for header view
+
+            Picasso.with(holder.itemView.getContext()).load(profile).into(holder.profile);
+
             holder.Name.setText(name);
             holder.email.setText(email);
+
+            holder.followers.setText(followers + "");
+            holder.following.setText(following + "");
+            holder.favs.setText(favs + "");
+
         }
     }
 
     // This method returns the number of items present in the list
     @Override
     public int getItemCount() {
-        return mNavTitles.length+1; // the number of items in the list will be +1 the titles including the header view.
+        return mNavTitles.length + 1; // the number of items in the list will be +1 the titles including the header view.
     }
 
 
@@ -138,5 +163,6 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
     private boolean isPositionHeader(int position) {
         return position == 0;
     }
+
 
 }

@@ -1,11 +1,17 @@
 package zwitter.batzee.com.zwitter;
 
+import android.app.ActivityOptions;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,20 +20,14 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.twitter.sdk.android.Twitter;
-import com.twitter.sdk.android.core.Callback;
-import com.twitter.sdk.android.core.Result;
-import com.twitter.sdk.android.core.TwitterApiClient;
-import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
-import com.twitter.sdk.android.core.models.User;
 
-import retrofit.http.GET;
-import retrofit.http.Query;
 import zwitter.batzee.com.zwitter.com.batzee.zwitter.adapters.SlideDrawerAdapter;
 import zwitter.batzee.com.zwitter.com.batzee.zwitter.adapters.ViewPagerAdapter;
 
@@ -36,7 +36,7 @@ import zwitter.batzee.com.zwitter.com.batzee.zwitter.adapters.ViewPagerAdapter;
  */
 public class Dashboard extends AppCompatActivity  {
 
-    Utils uTils;
+    Config uTils;
     SharedPreferences.Editor credentialStore;
     SharedPreferences prefs;
 
@@ -48,11 +48,17 @@ public class Dashboard extends AppCompatActivity  {
     //Titles And Icons For Our Navigation Drawer List
     String TITLES[] = {"Home","Logout"};
     int ICONS[] = {R.drawable.minihome,R.drawable.dna};
+
     //header data
     String NAME = "Zwitter";
     String EMAIL = "help@zwitter.com";
-    int PROFILE = R.drawable.ztweet;
-    String profileURL = "";
+    int PROFILE = R.drawable.ztweet;    //String profileURL = "" ;
+    String profileURL;
+    String backgroundImage;
+
+    int followers;
+    int following;
+    int favs;
 
     private Toolbar toolbar;                              // Declaring the Toolbar Object
 
@@ -70,14 +76,22 @@ public class Dashboard extends AppCompatActivity  {
     int Numboftabs =2;
     TwitterSession session;
 
+    ActivityOptions opts;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dashboard);
 
-       // session = Twitter.getSessionManager() .getActiveSession();
 
-        uTils = new Utils();
+        if(isNetworkAvailable()){
+
+        }
+        else{
+            noDataAlert();
+        }
+
+        uTils = new Config();
         prefs = getSharedPreferences(uTils.SharedPrefName, MODE_PRIVATE);
         credentialStore = prefs.edit();
 
@@ -85,34 +99,27 @@ public class Dashboard extends AppCompatActivity  {
         userID = prefs.getString(uTils.SessionUserID, "");
         sessionToken = prefs.getString(uTils.SessionToken, "");
         sessionSecret = prefs.getString(uTils.SessionSecret, "");
+        profileURL = prefs.getString(uTils.SessionProfileImage, "https://pbs.twimg.com/profile_images/378800000532546226/dbe5f0727b69487016ffd67a6689e75a_400x400.jpeg");
+        NAME = prefs.getString(uTils.namefromServer, "Zwitter");
+        EMAIL = prefs.getString(uTils.descfromServer, "help@zwitter.com");
+        followers = prefs.getInt(uTils.Follower, 0);
+        following =  prefs.getInt(uTils.Following, 0);
+        favs= prefs.getInt(uTils.Favs, 0);
+
+
+        toolbar = (Toolbar) findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
 
         setUpTabs();
-        setUpDrawerAction();
         setFloatingActionButton();
+        setUpDrawerAction();
 
-     //   getUserImage();
+        Window window = getWindow();
+        View v = window.getDecorView();
+        opts = ActivityOptions.makeScaleUpAnimation(v, v.getWidth(), v.getHeight(),v.getWidth(), v.getHeight());
 
     }
 
-    private void getUserImage() {
-
-
-
-        new MyTwitterApiClient(session).getUsersService().show(12L, null, true,
-                new Callback<User>() {
-                    @Override
-                    public void success(Result<User> result) {
-                        Log.d("twittercommunity", "user's profile url is "
-                                + result.data.profileImageUrlHttps);
-                        EMAIL = result.data.profileImageUrlHttps;
-                    }
-
-                    @Override
-                    public void failure(TwitterException exception) {
-                        Log.d("twittercommunity", "exception is " + exception);
-                    }
-                });
-    }
 
     private void setUpTabs() {
 
@@ -123,11 +130,11 @@ public class Dashboard extends AppCompatActivity  {
         pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(adapter);
 
-        // Assiging the Sliding Tab Layout View
+        // Assiging te Sliding Tab Layout View
         tabs = (SlidingTabLayout) findViewById(R.id.tabs);
         tabs.setDistributeEvenly(true); // To make the Tabs Fixed set this true, This makes the tabs Space Evenly in Available width
 
-        // Setting Custom Color for the Scroll bar indicator of the Tab View
+        // Setting Cushtom Color for the Scroll bar indicator of the Tab View
         tabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
             @Override
             public int getIndicatorColor(int position) {
@@ -138,17 +145,23 @@ public class Dashboard extends AppCompatActivity  {
         // Setting the ViewPager For the SlidingTabsLayout
         tabs.setViewPager(pager);
 
+        Log.d("Tabs", "Set");
+
     }
 
     private void setUpDrawerAction() {
 
-        toolbar = (Toolbar) findViewById(R.id.tool_bar);
-        setSupportActionBar(toolbar);
+        Log.d("Recycle Adapter", "Set");
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(Dashboard.this);
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView); // Assigning the RecyclerView Object to the xml View
-        mRecyclerView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
-        mAdapter = new SlideDrawerAdapter(TITLES,ICONS,NAME,EMAIL,PROFILE);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
-        mRecyclerView.setAdapter(mAdapter);                              // Setting the adapter to RecyclerView
+        mRecyclerView.setLayoutManager(layoutManager);
+
+        mRecyclerView.setHasFixedSize(true);// Letting the system know that the list objects are of fixed size
+        mAdapter = new SlideDrawerAdapter(TITLES,ICONS,userName,EMAIL,profileURL, followers, following, favs);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
+        mRecyclerView.setAdapter(mAdapter);
 
         final GestureDetector mGestureDetector = new GestureDetector(Dashboard.this, new GestureDetector.SimpleOnGestureListener() {
 
@@ -167,11 +180,14 @@ public class Dashboard extends AppCompatActivity  {
 
                 if (child != null && mGestureDetector.onTouchEvent(motionEvent)) {
                     Drawer.closeDrawers();
-
                     if (recyclerView.getChildPosition(child) == 2) {
+                        Log.d("LogOut","Trigger 1");
                         logOutAction();
-                    } else {
-                        Toast.makeText(Dashboard.this, "The Item Clicked is: " + recyclerView.getChildPosition(child), Toast.LENGTH_SHORT).show();
+                    }
+                    else if(recyclerView.getChildPosition(child) == 1){
+                       // Drawer.closeDrawers();
+                    }else {
+                       // Toast.makeText(Dashboard.this, "The Item Clicked is: " + recyclerView.getChildPosition(child), Toast.LENGTH_SHORT).show();
                     }
                     return true;
                 }
@@ -208,7 +224,12 @@ public class Dashboard extends AppCompatActivity  {
     }
 
     private void logOutAction() {
+        Log.d("LogOut","Trigger 2");
+        logOutAlert();
 
+    }
+
+    private void logOut(){
         Twitter.getInstance();
         Twitter.logOut();
 
@@ -234,8 +255,9 @@ public class Dashboard extends AppCompatActivity  {
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent tweet =  new Intent(Dashboard.this,Tweet.class);
-                startActivity(tweet);
+                Intent tweet = new Intent(Dashboard.this, TweetingActivity.class);
+                // ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation();
+                startActivity(tweet, opts.toBundle());
             }
         });
 
@@ -254,13 +276,14 @@ public class Dashboard extends AppCompatActivity  {
         tweetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent tweet =  new Intent(Dashboard.this,Tweet.class);
+                Intent tweet =  new Intent(Dashboard.this,TweetingActivity.class);
                 startActivity(tweet);
             }
         });
         */
     }
 
+    /*
     class MyTwitterApiClient extends TwitterApiClient {
         public MyTwitterApiClient(TwitterSession session) {
             super(session);
@@ -279,4 +302,56 @@ public class Dashboard extends AppCompatActivity  {
                   @Query("include_entities") Boolean includeEntities,
                   Callback<User> cb);
     }
+*/
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager
+                .getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    public void noDataAlert() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                Dashboard.this);
+        alertDialogBuilder.setTitle("No active network found");
+
+        alertDialogBuilder
+                .setMessage(
+                        "This application needs active internet connection to interact with your twitter feeds, connect to a network and try again")
+                .setCancelable(false)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Dashboard.this.finish();
+                    }
+                });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+
+    }
+
+    public void logOutAlert() {
+
+        Log.d("LogOut","Trigger 3");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Areyou sure you want to logout?")
+                .setPositiveButton("Logout", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        logOut();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+
+    }
+
+
 }

@@ -17,7 +17,7 @@ import com.twitter.sdk.android.tweetui.UserTimeline;
  */
 public class TweetTimeLine extends ListFragment {
 
-    Utils uTils;
+    Config uTils;
     SharedPreferences.Editor credentialStore;
     SharedPreferences prefs;
     String userName;
@@ -26,7 +26,7 @@ public class TweetTimeLine extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        uTils = new Utils();
+        uTils = new Config();
         prefs = this.getActivity().getSharedPreferences(uTils.SharedPrefName, Context.MODE_PRIVATE);
         credentialStore = prefs.edit();
 

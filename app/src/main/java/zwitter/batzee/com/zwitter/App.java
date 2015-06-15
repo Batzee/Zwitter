@@ -17,7 +17,7 @@ public class App extends Application {
 
     private static App singleton;
     private TwitterAuthConfig authConfig;
-    private static Utils uTils;
+    private static Config config;
 
     public static App getInstance() {
         return singleton;
@@ -27,9 +27,9 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         singleton = this;
-        uTils = new Utils();
+        config = new Config();
 
-        authConfig = new TwitterAuthConfig(uTils.ApiKey, uTils.ApiSecret);
+        authConfig = new TwitterAuthConfig(config.ApiKey, config.ApiSecret);
         Fabric.with(this, new Twitter(authConfig),new TweetComposer(),new TwitterCore(authConfig));
         Log.d("App", "Success");
 

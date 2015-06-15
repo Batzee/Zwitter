@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="178dp"
+    android:layout_height="220dp"
     android:background="@drawable/lightblue"
     android:orientation="vertical"
     android:weightSum="1">
@@ -14,16 +14,19 @@
         android:orientation="vertical"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:id="@+id/linearLayout"
+        android:layout_below="@+id/circleView"
+        android:paddingTop="10dp">
 
         <TextView
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:textColor="#ffffff"
-            android:text="Zwitter"
-            android:textSize="14sp"
+            android:textColor="@color/white"
+            android:text="@string/Header_Name_Field"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:textStyle="bold"
 
             />
@@ -32,11 +35,11 @@
             android:id="@+id/email"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#ffffff"
+            android:textColor="@color/white"
             android:layout_marginLeft="16dp"
             android:layout_marginTop="5dp"
-            android:text="help@zwitter.com"
-            android:textSize="14sp"
+            android:text="@string/Header_Info_Field"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:textStyle="normal"
 
             />
@@ -47,7 +50,92 @@
         android:layout_height="70dp"
         android:src="@drawable/ztweet"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="38dp"
+        android:layout_marginTop="33dp"
         android:id="@+id/circleView"
-        />
+        android:layout_alignParentStart="true" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/circleView"
+        android:layout_alignParentEnd="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/default_follower_number"
+                android:id="@+id/followerNumber"
+                android:layout_weight="1"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/followers"
+                android:id="@+id/followerLabel"
+                android:layout_weight="1" />
+
+
+        </LinearLayout>
+
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/default_following_number"
+                android:id="@+id/followingnumber"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/following"
+                android:id="@+id/followinglabel" />
+
+
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingRight="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/default_fav_number"
+                android:id="@+id/favNumber"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/favourites"
+                android:id="@+id/favLabel" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
 </RelativeLayout>

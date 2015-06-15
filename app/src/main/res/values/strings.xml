@@ -6,6 +6,17 @@
 
     <string name="drawer_open">Slider Menu Opened</string>
     <string name="drawer_close">Slider Menu Closed</string>
+    <string name="followers">Followers</string>
+    <string name="Header_Name_Field">Zwitter</string>
+    <string name="Header_Info_Field">help@zwitter.com</string>
+    <string name="default_follower_number">0</string>
+    <string name="default_following_number">0</string>
+    <string name="following">Following</string>
+    <string name="default_fav_number">0</string>
+    <string name="favourites">Favourites</string>
+    <string name="Row_Item_Template">Row Item</string>
+    <string name="search_hint">Search</string>
+    <string name="tweet_hint">Type Your Tweet Here</string>
 
     <string-array name="nav_drawer_items">
         <item >Home</item>

@@ -3,16 +3,17 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="1"
-    android:background="#ffffff">
+    android:background="@color/white">
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
         android:ems="10"
+        android:hint="@string/tweet_hint"
         android:id="@+id/tweetText"
         android:background="@color/background_floating_material_dark"
-        android:textColor="#ffffff"
+        android:textColor="@color/white"
         android:layout_margin="7dp"
         android:layout_weight="0.25"
         android:paddingLeft="10dp" />
