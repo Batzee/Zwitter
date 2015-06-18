@@ -18,7 +18,7 @@ public class Config {
     public String Following = "Following";
     public String Favs = "Favourites";
 
-    public String ApiKey = "xxxxxxx";
-    public String ApiSecret = "xxxxxxxxx";
+    public String ApiKey = "CvgQ2wwF2u4vbkMHP4mSlmY01";
+    public String ApiSecret = "pAtUWimAgK5KfhDiqEbYTqD5w4BgiWWSCKjqcYL4fCkQlScTuo";
 
 }

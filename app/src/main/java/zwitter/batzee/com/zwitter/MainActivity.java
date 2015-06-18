@@ -65,6 +65,7 @@ public class MainActivity extends Activity {
 
         loginButton = (TwitterLoginButton)findViewById(R.id.login_button);
 
+
         loginButton.setCallback(new Callback<TwitterSession>() {
             @Override
             public void success(Result<TwitterSession> result) {

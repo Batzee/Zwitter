@@ -18,6 +18,8 @@
     <string name="search_hint">Search</string>
     <string name="tweet_hint">Type Your Tweet Here</string>
 
+    <string name="transition_avatar">AvatarTransition</string>
+
     <string-array name="nav_drawer_items">
         <item >Home</item>
         <item >Logout</item>

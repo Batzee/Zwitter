@@ -247,17 +247,16 @@ public class Dashboard extends AppCompatActivity  {
 
         ImageView icon = new ImageView(this); // Create an icon
         icon.setImageResource(R.drawable.ztweetlogo);
-        FloatingActionButton actionButton = new FloatingActionButton.Builder(this)
+        final FloatingActionButton actionButton = new FloatingActionButton.Builder(this)
                 .setContentView(icon)
                 .setBackgroundDrawable(R.drawable.action_selector)
                 .build();
-
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent tweet = new Intent(Dashboard.this, TweetingActivity.class);
-                // ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation();
-                startActivity(tweet, opts.toBundle());
+                ActivityOptions activityOptions = ActivityOptions.makeSceneTransitionAnimation(Dashboard.this, actionButton, Dashboard.this.getString(R.string.transition_avatar));
+                startActivity(tweet, activityOptions.toBundle());
             }
         });
 

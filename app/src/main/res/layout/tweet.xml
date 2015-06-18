@@ -15,14 +15,68 @@
         android:background="@color/background_floating_material_dark"
         android:textColor="@color/white"
         android:layout_margin="7dp"
+        android:elevation="4dp"
         android:layout_weight="0.25"
         android:paddingLeft="10dp" />
 
-    <ImageButton
-        android:layout_width="63dp"
-        android:layout_height="65dp"
-        android:id="@+id/tweetButton"
-        android:layout_gravity="right"
-        android:background="@drawable/action_selector_tweet"
-        android:paddingRight="7dp" />
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Char Count : "
+            android:textColor="#4d93bb"
+            android:elevation="4dp"
+            android:id="@+id/textViewCharCount"
+            android:paddingLeft="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="0"
+            android:textColor="#ee1120"
+            android:id="@+id/textViewCharNo"
+            android:elevation="4dp"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/textViewCharCount" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="  Page Count : "
+            android:textColor="#5aad43"
+            android:id="@+id/textViewPageCount"
+            android:elevation="4dp"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/textViewCharNo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="0"
+            android:textColor="#ee1120"
+            android:id="@+id/textViewPageNo"
+            android:elevation="4dp"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/textViewPageCount" />
+
+        <ImageButton
+            android:layout_width="63dp"
+            android:layout_height="65dp"
+            android:id="@+id/tweetButton"
+            android:background="@drawable/action_selector_tweet"
+            android:paddingRight="7dp"
+            android:elevation="4dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true" />
+
+    </RelativeLayout>
+
+
 </LinearLayout>

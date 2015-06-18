@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId "zwitter.batzee.com.zwitter"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 22
         versionCode 1
         versionName "0.1.0"

@@ -5,11 +5,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import twitter4j.Twitter;
@@ -28,12 +31,17 @@ public class TweetingActivity extends Activity {
     EditText tweetText;
     ImageButton tweetButton;
     String tweetableText;
+    TextView charCount;
+    TextView pageCount;
 
     String sessionToken;
     String sessionSecret;
     String userName;
     String userID;
     int zweetSize;
+    int pageSize;
+
+    int typedText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +53,38 @@ public class TweetingActivity extends Activity {
 
         tweetText = (EditText) findViewById(R.id.tweetText);
         tweetButton = (ImageButton) findViewById(R.id.tweetButton);
+        charCount = (TextView) findViewById(R.id.textViewCharNo);
+        pageCount = (TextView) findViewById(R.id.textViewPageNo);
 
         /*
         tweetButton.setImageDrawable(getResources().getDrawable(R.drawable.ztweetlogo));
         tweetButton.setBackgroundResource(R.drawable.action_selector);
         */
+
+
+        tweetText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                typedText = tweetText.getText().toString().length();
+                charCount.setText(typedText+"");
+
+                pageSize = (typedText/zweetSize)+1;
+                pageCount.setText(pageSize+"");
+
+
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+                // TODO Auto-generated method stub
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+                // TODO Auto-generated method stub
+            }
+        });
+
 
         tweetButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,9 +104,6 @@ public class TweetingActivity extends Activity {
         int no_of_tweets = text_count/zweetSize;
         int mod_tweet = text_count%zweetSize;
 
-      //  ArrayList<String> splitTweets = new ArrayList<>();
-      //  List<String> l = Arrays.<String>asList(text.split("(?<=\\G.{132})"));
-       // splitTweets = new ArrayList<String>(l);
 
         if(mod_tweet == 0){
             String[] num = new String[no_of_tweets];
